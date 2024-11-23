@@ -35,7 +35,7 @@ class WeatherAPIClient:
         try:
             response = requests.get(
                 f"{self.BASE_URL}?q={city}&appid={self.api_key}&units=imperial", 
-                timeout=10  # Timeout added
+                timeout=10  # Added timeout for better error handling
             )
             response.raise_for_status()
             return response.json()
@@ -59,7 +59,7 @@ class WeatherAPIClient:
         try:
             response = requests.get(
                 f"{self.FORECAST_URL}?q={city}&appid={self.api_key}&units=imperial", 
-                timeout=10  # Timeout added
+                timeout=10  # Added timeout for better error handling
             )
             response.raise_for_status()
             return response.json()
