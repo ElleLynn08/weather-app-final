@@ -2,6 +2,7 @@ import requests
 
 class WeatherAPIClient:
     BASE_URL = "https://api.openweathermap.org/data/2.5/weather"
+    FORECAST_URL = "https://api.openweathermap.org/data/2.5/forecast"
 
     def __init__(self, api_key):
         self.api_key = api_key
@@ -18,9 +19,32 @@ class WeatherAPIClient:
         """
         try:
             response = requests.get(
-                f"{self.BASE_URL}?q={city}&appid={self.api_key}&units=imperial"  # Changed to Fahrenheit (imperial units)
+                f"{self.BASE_URL}?q={city}&appid={self.api_key}&units=imperial"  # Fahrenheit
             )
-            response.raise_for_status()  # Raises an HTTPError for bad responses
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.HTTPError as http_err:
+            print(f"HTTP error occurred: {http_err}")
+            return None
+        except Exception as err:
+            print(f"An error occurred: {err}")
+            return None
+
+    def get_5_day_forecast(self, city):
+        """
+        Fetches the 5-day weather forecast for a given city.
+
+        Parameters:
+        city (str): The city for which to fetch the weather data.
+
+        Returns:
+        dict: A dictionary with forecast data if the request is successful; None otherwise.
+        """
+        try:
+            response = requests.get(
+                f"{self.FORECAST_URL}?q={city}&appid={self.api_key}&units=imperial"  # Fahrenheit
+            )
+            response.raise_for_status()
             return response.json()
         except requests.exceptions.HTTPError as http_err:
             print(f"HTTP error occurred: {http_err}")
@@ -52,4 +76,5 @@ class WeatherAPIClient:
         }
         # Default icon if condition is not recognized
         return icon_map.get(condition.lower(), "static/icons/animated/weather.svg")
+
 
