@@ -1,10 +1,25 @@
+"""
+This module defines the WeatherAPIClient for interacting with the OpenWeather API.
+"""
+
 import requests
 
+
 class WeatherAPIClient:
+    """
+    A client for fetching current weather and 5-day forecast data using the OpenWeather API.
+    """
+
     BASE_URL = "https://api.openweathermap.org/data/2.5/weather"
     FORECAST_URL = "https://api.openweathermap.org/data/2.5/forecast"
 
     def __init__(self, api_key):
+        """
+        Initializes the WeatherAPIClient with an API key.
+
+        Parameters:
+        api_key (str): The API key for authenticating with the OpenWeather API.
+        """
         self.api_key = api_key
 
     def get_current_weather(self, city):
@@ -19,15 +34,16 @@ class WeatherAPIClient:
         """
         try:
             response = requests.get(
-                f"{self.BASE_URL}?q={city}&appid={self.api_key}&units=imperial"  # Fahrenheit
+                f"{self.BASE_URL}?q={city}&appid={self.api_key}&units=imperial", 
+                timeout=10  # Timeout added
             )
             response.raise_for_status()
             return response.json()
         except requests.exceptions.HTTPError as http_err:
             print(f"HTTP error occurred: {http_err}")
             return None
-        except Exception as err:
-            print(f"An error occurred: {err}")
+        except requests.exceptions.RequestException as req_err:
+            print(f"Request error occurred: {req_err}")
             return None
 
     def get_5_day_forecast(self, city):
@@ -42,15 +58,16 @@ class WeatherAPIClient:
         """
         try:
             response = requests.get(
-                f"{self.FORECAST_URL}?q={city}&appid={self.api_key}&units=imperial"  # Fahrenheit
+                f"{self.FORECAST_URL}?q={city}&appid={self.api_key}&units=imperial", 
+                timeout=10  # Timeout added
             )
             response.raise_for_status()
             return response.json()
         except requests.exceptions.HTTPError as http_err:
             print(f"HTTP error occurred: {http_err}")
             return None
-        except Exception as err:
-            print(f"An error occurred: {err}")
+        except requests.exceptions.RequestException as req_err:
+            print(f"Request error occurred: {req_err}")
             return None
 
     def get_icon_path(self, condition):
@@ -76,5 +93,3 @@ class WeatherAPIClient:
         }
         # Default icon if condition is not recognized
         return icon_map.get(condition.lower(), "static/icons/animated/weather.svg")
-
-

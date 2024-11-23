@@ -1,8 +1,8 @@
 from dotenv import load_dotenv
 import os
 from src.weather_api_client import WeatherAPIClient
-from src.patterns.time_strategy import SystemTimeStrategy, LocalTimeStrategy
 from datetime import datetime, timezone, timedelta
+import socket
 
 def format_date(date_obj, is_24_hour_format=True):
     """
@@ -16,12 +16,52 @@ def format_date(date_obj, is_24_hour_format=True):
     str: Formatted date string.
     """
     day_of_week = date_obj.strftime("%A")
-    date = date_obj.strftime("%d %B %Y")
+    date = date_obj.strftime("%d %b %Y")  # Shortened month format
     if is_24_hour_format:
         time = date_obj.strftime("%H:%M")
     else:
         time = date_obj.strftime("%I:%M %p")
-    return f"Today is {day_of_week}, {date}, and the time is {time}"
+    return f"{day_of_week}, {date}, and the time is {time}"
+
+def display_forecast(forecast):
+    """
+    Displays a simplified 5-day forecast.
+
+    Parameters:
+    forecast (dict): The forecast data.
+    """
+    print("\n5-Day Weather Forecast:")
+    days_shown = set()  # To keep track of unique days (no duplicates)
+    for day in forecast["list"]:
+        # Parse date and time from forecast data
+        date = datetime.strptime(day["dt_txt"], "%Y-%m-%d %H:%M:%S")
+        day_abbr = date.strftime("%a")  # Shortened weekday (e.g., Sun, Mon)
+        if day_abbr not in days_shown:
+            days_shown.add(day_abbr)  # Add day to set to avoid duplicates
+
+            # Extract forecast details
+            high_temp = round(day["main"]["temp_max"])
+            low_temp = round(day["main"]["temp_min"])
+            description = day["weather"][0]["description"].capitalize()
+            icon_path = day["weather"][0].get("icon", "")  # Placeholder for icon path
+
+            # Print the forecast
+            print(f"{day_abbr}: {description}, High: {high_temp}°F, Low: {low_temp}°F, Icon: {icon_path}")
+        
+        if len(days_shown) == 5:  # Stop after 5 unique days
+            break
+
+def get_local_location():
+    """
+    Tries to get the local hostname or location for display purposes.
+
+    Returns:
+    str: Local hostname or a fallback string.
+    """
+    try:
+        return socket.gethostname()  # Attempts to fetch local machine's hostname
+    except Exception:
+        return "your location"  # Fallback
 
 def main():
     load_dotenv()
@@ -37,20 +77,17 @@ def main():
     # Fetch current weather
     current_weather = client.get_current_weather(city)
     if current_weather:
-        # Use strategies for time calculations
-        system_time_strategy = SystemTimeStrategy()
-        local_time_strategy = LocalTimeStrategy()
-
-        # Fetch and print the caller's current time
+        # Get local time and location
         caller_time = datetime.now()
-        print(f"\nYour current time and date is: {format_date(caller_time, is_24_hour_format=False)}")
+        local_location = get_local_location()
+        print(f"\nYour local time and date is: {caller_time.strftime('%d %b %Y')} and the time is {caller_time.strftime('%I:%M %p')} in {local_location}")
 
-        # Calculate and print the city's local time
+        # Calculate and display city's local time
         timezone_offset = current_weather.get("timezone", 0)
-        local_time = datetime.now(timezone.utc) + timedelta(seconds=timezone_offset)
-        print(f"Local time and date in {city} is: {format_date(local_time, is_24_hour_format=False)}")
+        city_time = datetime.now(timezone.utc) + timedelta(seconds=timezone_offset)
+        print(f"The current time and date in {city} is: {format_date(city_time, is_24_hour_format=False)}")
 
-        # Display weather
+        # Display current weather
         print(f"\nWeather in {city}: {current_weather['weather'][0]['description'].capitalize()}")
         print(f"Temperature: {round(current_weather['main']['temp'])}°F")
     else:
@@ -65,6 +102,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
