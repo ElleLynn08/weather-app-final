@@ -5,46 +5,30 @@ from src.patterns.history_manager import HistoryManager
 from datetime import datetime, timezone, timedelta
 import socket
 
-
+# Utility function to format dates and times
 def format_date(date_obj, is_24_hour_format=True):
     """
-    Formats a datetime object into a user-friendly date string.
-
-    Parameters:
-    date_obj (datetime): The datetime object to format.
-    is_24_hour_format (bool): Whether to use 24-hour format for the time.
-
-    Returns:
-    str: Formatted date string.
+    Formats a datetime object into a friendly date and time string.
+    You can toggle between 24-hour or 12-hour (AM/PM) format.
     """
-    day_of_week = date_obj.strftime("%A")
-    date = date_obj.strftime("%d %b %Y")
+    day_of_week = date_obj.strftime("%A")  # Example: Monday
+    date = date_obj.strftime("%d %b %Y")  # Example: 24 Nov 2024
     time = date_obj.strftime("%H:%M") if is_24_hour_format else date_obj.strftime("%I:%M %p")
     return f"{day_of_week}, {date}, and the time is {time}"
 
 
+# This fetches the machine's hostname (just something fun to include!)
 def get_local_location():
-    """
-    Tries to get the local machine's hostname to show the caller's location.
-
-    Returns:
-    str: The hostname or a fallback message.
-    """
     try:
         return socket.gethostname()
     except Exception:
         return "your location"
 
 
+# Function to display a simple 5-day weather forecast
 def display_forecast(forecast):
-    """
-    Displays a clean and simple 5-day forecast.
-
-    Parameters:
-    forecast (dict): The forecast data from the Weather API.
-    """
     print("\n5-Day Weather Forecast:")
-    for day in forecast["list"][:40:8]:  # Every 8th timestamp (8 timestamps per day)
+    for day in forecast["list"][:40:8]:  # Grabbing every 8th timestamp (one per day)
         date = datetime.strptime(day["dt_txt"], "%Y-%m-%d %H:%M:%S")
         print(
             f"{date.strftime('%a')}: {day['weather'][0]['description'].capitalize()}, "
@@ -54,13 +38,8 @@ def display_forecast(forecast):
         )
 
 
+# Displays weather history saved by the user
 def display_history(history):
-    """
-    Displays the saved weather history.
-
-    Parameters:
-    history (list): A list of saved weather history entries.
-    """
     print("\nWeather History:")
     for entry in history:
         print(
@@ -70,43 +49,35 @@ def display_history(history):
         )
 
 
+# This is the main function that brings it all together!
 def main():
-    """
-    Main function to run the Weather App.
-    Handles user input, fetches weather data, saves history, and displays it.
-    """
-    # Load environment variables from .env file
     load_dotenv()
-    api_key = os.getenv("API_KEY")  # Get the API key from the environment
+    api_key = os.getenv("API_KEY")
 
-    if not api_key:  # Check if the API key is missing
+    if not api_key:
         print("API Key not found. Please set it in the .env file.")
         return
 
-    # Initialize the Weather API client and the History Manager
+    # Initialize the Weather API client and history manager
     client = WeatherAPIClient(api_key)
     history_manager = HistoryManager()
 
-    # Prompt the user to enter a city
     city = input("Enter the name of a city to get the weather: ")
     current_weather = client.get_current_weather(city)
 
     if current_weather:
-        # Display the caller's current time
         caller_time = datetime.now()
         local_location = get_local_location()
-        print(f"\nYour local time and date is: {caller_time.strftime('%d %b %Y')} and the time is {caller_time.strftime('%I:%M %p')} in {local_location}")
+        print(f"\nYour local time is: {caller_time.strftime('%I:%M %p')} in {local_location}")
 
-        # Calculate and display the city's local time
-        timezone_offset = current_weather.get("timezone", 0)  # Get the timezone offset in seconds
+        timezone_offset = current_weather.get("timezone", 0)  # Timezone offset in seconds
         local_time = datetime.now(timezone.utc) + timedelta(seconds=timezone_offset)
-        print(f"The current time and date in {city} is: {format_date(local_time, is_24_hour_format=False)}")
+        print(f"The time in {city} is: {format_date(local_time, is_24_hour_format=False)}")
 
-        # Display the current weather
         print(f"\nWeather in {city}: {current_weather['weather'][0]['description'].capitalize()}")
         print(f"Temperature: {round(current_weather['main']['temp'])}°F")
 
-        # Save the current weather to the history
+        # Save the weather data to history
         history_manager.save({
             "city": city,
             "date": caller_time.strftime("%Y-%m-%d"),
@@ -114,12 +85,12 @@ def main():
             "temp": round(current_weather['main']['temp']),
         })
 
-        # Fetch and display the 5-day forecast
+        # Get the 5-day forecast and display it
         forecast = client.get_5_day_forecast(city)
         if forecast:
             display_forecast(forecast)
 
-    # Prompt the user to view saved weather history
+    # Ask if the user wants to view history
     print("\nWould you like to view weather history? (yes/no)")
     if input().lower() == "yes":
         display_history(history_manager.get_all())
@@ -127,6 +98,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 

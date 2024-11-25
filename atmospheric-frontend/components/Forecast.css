@@ -1,0 +1,64 @@
+/* General container for the forecast */
+.forecast-container {
+    margin: 20px;
+    text-align: center;
+    color: #fff;
+  }
+  
+  /* Styling for "No forecast data available" message */
+  .forecast-no-data {
+    text-align: center;
+    color: #fff;
+  }
+  
+  /* List container to align forecast items */
+  .forecast-list {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    flex-wrap: wrap;
+  }
+  
+  /* Individual forecast day card */
+  .forecast-day {
+    background-color: #007bff;
+    padding: 10px;
+    border-radius: 10px;
+    color: #fff;
+    width: 120px;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s;
+  }
+  
+  /* Add hover effect for forecast cards */
+  .forecast-day:hover {
+    transform: scale(1.05);
+  }
+  
+  /* Styling for the day name */
+  .forecast-day-name {
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+  
+  /* Temperature text styling */
+  .forecast-temp {
+    font-size: 14px;
+    margin: 5px 0;
+  }
+  
+  /* Weather icon styling */
+  .forecast-icon {
+    width: 50px;
+    height: 50px;
+    margin: 5px 0;
+  }
+  
+  /* Description of the weather */
+  .forecast-description {
+    font-size: 12px;
+    text-transform: capitalize;
+    margin-top: 5px;
+  }
+  
