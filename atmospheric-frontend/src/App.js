@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { DateTime } from "luxon"; // Luxon for time handling
 import CurrentWeather from "./components/CurrentWeather";
 import Forecast from "./components/Forecast";
+import axios from "axios"; // Axios for API calls
 import "./App.css";
 import { getSweetMessage } from "./components/WeatherMessages";
 
@@ -14,42 +15,48 @@ const App = () => {
   const [error, setError] = useState("");
   const [searchTriggered, setSearchTriggered] = useState(false);
 
-  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "";
+  // Base URL and API key from .env file
+  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://127.0.0.1:5000";
+  const API_KEY = process.env.REACT_APP_API_KEY;
 
   const fetchWeatherData = useCallback(
     async (queryCity, units) => {
       try {
-        const response = await fetch(
-          `${API_BASE_URL}/weather?city=${queryCity}&units=${units}`
-        );
-        if (!response.ok) throw new Error("Failed to fetch weather data.");
-        const data = await response.json();
-        setWeatherData(data);
+        const response = await axios.get(`${API_BASE_URL}/weather`, {
+          params: {
+            city: queryCity, // Changed from 'q' to 'city'
+            units: units,
+            appid: API_KEY,
+          },
+        });
+        setWeatherData(response.data);
         setError("");
       } catch (err) {
         console.error(err.message);
         setError("City not found. Please enter a valid city.");
       }
     },
-    [API_BASE_URL]
+    [API_BASE_URL, API_KEY]
   );
 
   const fetchForecastData = useCallback(
     async (queryCity, units) => {
       try {
-        const response = await fetch(
-          `${API_BASE_URL}/forecast?city=${queryCity}&units=${units}`
-        );
-        if (!response.ok) throw new Error("Failed to fetch forecast data.");
-        const data = await response.json();
-        setForecastData(data.list);
+        const response = await axios.get(`${API_BASE_URL}/forecast`, {
+          params: {
+            city: queryCity, // Changed from 'q' to 'city'
+            units: units,
+            appid: API_KEY,
+          },
+        });
+        setForecastData(response.data.list);
         setError("");
       } catch (err) {
         console.error(err.message);
         setError("City not found. Please enter a valid city.");
       }
     },
-    [API_BASE_URL]
+    [API_BASE_URL, API_KEY]
   );
 
   const handleSearch = () => {
@@ -72,29 +79,23 @@ const App = () => {
   const toggleTimeFormat = () =>
     setTimeFormat((prev) => (prev === "12-hour" ? "24-hour" : "12-hour"));
 
-  // Function to get the local hour
   const getLocalHour = (timezoneOffset) => {
     if (timezoneOffset === undefined || timezoneOffset === null) {
       return null;
     }
     const utcDateTime = DateTime.utc();
     const localDateTime = utcDateTime.plus({ seconds: timezoneOffset });
-    return localDateTime.hour; // Returns hour in 24-hour format (0-23)
+    return localDateTime.hour;
   };
 
-  // Determine if it's nighttime using useMemo
   const isNightTime = useMemo(() => {
     if (weatherData?.timezone !== undefined) {
       const localHour = getLocalHour(weatherData.timezone);
-      console.log(`Local hour in ${weatherData.name}: ${localHour}`);
-      const isNight = localHour >= 21 || localHour < 6; // Nighttime between 9 PM and 6 AM
-      console.log(`Is it nighttime in ${weatherData.name}? ${isNight}`);
-      return isNight;
+      return localHour >= 21 || localHour < 6;
     }
     return false;
   }, [weatherData]);
 
-  // Updated getFormattedDateTime function using Luxon
   const getFormattedDateTime = (timezoneOffset, formatType) => {
     if (timezoneOffset === undefined || timezoneOffset === null) {
       return "Time zone not available";
@@ -127,7 +128,7 @@ const App = () => {
           value={city}
           onChange={(e) => {
             setCity(e.target.value);
-            setSearchTriggered(false); // Reset search state
+            setSearchTriggered(false);
           }}
           placeholder="Enter a city..."
         />
@@ -171,6 +172,10 @@ const App = () => {
 };
 
 export default App;
+
+
+
+
 
 
 
