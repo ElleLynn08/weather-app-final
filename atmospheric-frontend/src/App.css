@@ -1,3 +1,4 @@
+/* General Body Styles */
 body {
   margin: 0;
   padding: 0;
@@ -5,7 +6,7 @@ body {
   font-family: "Arial", sans-serif;
 }
 
-/* App container */
+/* App Container */
 .app {
   max-width: 700px;
   margin: 50px auto;
@@ -22,25 +23,24 @@ body {
   box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
 }
 
-/* Header styles */
+/* Header and Logo Styling */
 .header {
-  text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: 30px; /* Add spacing below the header */
 }
 
 .logo {
-  max-width: 400px;
+  width: 80%; /* Shrink the logo on smaller screens */
+  max-width: 300px; /* Limit logo size */
   height: auto;
-  display: block;
-  margin: 0 auto;
+  margin: 0 auto; /* Center horizontally */
 }
 
-/* Toggle buttons and search bar */
+/* Search Row and Buttons */
 .search-row {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 10px; /* Spacing between elements */
+  gap: 10px; /* Space between elements */
   margin-bottom: 20px;
 }
 
@@ -49,7 +49,8 @@ body {
   border: 1px solid #ccc;
   border-radius: 5px;
   font-size: 16px;
-  width: 50%; /* Adjust for consistent sizing */
+  width: 50%; /* Consistent sizing for desktop */
+  max-width: 400px; /* Limit width on larger screens */
 }
 
 .search-row button {
@@ -67,27 +68,45 @@ body {
   background-color: #003d5a;
 }
 
-/* Time and sweet comment styles */
-.time-row {
-  margin-top: 10px;
-  font-size: 16px;
-  font-weight: bold;
+/* Button Group */
+.button-group {
+  display: flex;
+  flex-direction: row; /* Buttons in a row by default */
+  gap: 10px; /* Space between buttons */
+  justify-content: center;
+}
+
+/* Forecast Container Fix */
+.forecast-container {
+  max-width: 700px;
+  margin: 20px auto;
+  text-align: center;
   color: #fff;
 }
 
-.sweet-comment {
-  margin-top: 10px;
-  font-size: 18px;
-  font-style: italic;
+/* Responsive Design for Small Screens */
+@media (max-width: 768px) {
+  .search-row {
+    flex-direction: column; /* Stack search bar and buttons vertically */
+    gap: 15px; /* Space between stacked elements */
+  }
+
+  .button-group {
+    flex-direction: column; /* Stack buttons vertically */
+    gap: 10px; /* Add space between stacked buttons */
+  }
+
+  .search-row input,
+  .search-row button {
+    width: 100%; /* Full width for smaller devices */
+    max-width: none; /* Remove max-width constraint */
+  }
+
+  .forecast-container {
+    padding: 10px; /* Add padding for smaller devices */
+  }
 }
 
-
-/* Error messages */
-.error {
-  color: red;
-  font-size: 16px;
-  margin: 10px 0;
-}
 
 
 
