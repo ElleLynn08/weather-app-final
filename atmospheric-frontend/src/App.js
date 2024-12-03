@@ -16,7 +16,7 @@ const App = () => {
   const [searchTriggered, setSearchTriggered] = useState(false);
 
   // Base URL and API key from .env file
-  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://127.0.0.1:5000";
+  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://127.0.0.1:5001";
   const API_KEY = process.env.REACT_APP_API_KEY;
 
   const fetchWeatherData = useCallback(

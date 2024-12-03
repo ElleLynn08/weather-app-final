@@ -83,7 +83,9 @@ def get_forecast():
         return jsonify({"error": "Failed to fetch forecast data", "details": str(e)}), 500
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="127.0.0.1", port=5001)
+
+
 
 
 
