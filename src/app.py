@@ -4,71 +4,88 @@ import requests
 from dotenv import load_dotenv
 import os
 
-# Initializing the Flask app and enabling CORS for cross-origin requests
+# Initialize Flask app and enable CORS
 app = Flask(__name__)
-CORS(app)  # This allows the frontend to communicate with the backend easily.
+CORS(app)
 
-# Load environment variables (this is where we grab the API key from .env)
+# Load environment variables
 load_dotenv()
-API_KEY = os.getenv("API_KEY")
+API_KEY = os.getenv("OPENWEATHER_API_KEY")
+TIMEZONEDB_API_KEY = os.getenv("TIMEZONEDB_API_KEY")
 
-# A quick safety check to ensure the API key is available
+# Validate API keys
 if not API_KEY:
-    raise ValueError("API_KEY not found in the environment variables. Did you forget to add it?")
+    print("Error: OPENWEATHER_API_KEY is not set in the environment variables.")
+    exit(1)
+
+if not TIMEZONEDB_API_KEY:
+    print("Error: TIMEZONEDB_API_KEY is not set in the environment variables.")
+    exit(1)
 
 BASE_URL = "https://api.openweathermap.org/data/2.5/weather"
 FORECAST_URL = "https://api.openweathermap.org/data/2.5/forecast"
 
 @app.route('/weather', methods=['GET'])
 def get_weather():
-    """
-    Handles requests for current weather data. Requires 'city' as a query parameter.
-    Example: /weather?city=London&units=imperial
-    """
-    city = request.args.get('city')  # Grabbing the city from the request
-    units = request.args.get('units', 'imperial')  # Defaults to imperial if not specified
+    city = request.args.get('city')
+    units = request.args.get('units', 'imperial')
 
     if not city:
         return jsonify({"error": "City is required"}), 400
 
     try:
-        # Sending a request to OpenWeather API for current weather
+        # Fetch weather data
         response = requests.get(f"{BASE_URL}?q={city}&appid={API_KEY}&units={units}")
-        response.raise_for_status()  # Raise an error if the request fails
-        data = response.json()
+        if response.status_code == 404:
+            return jsonify({"error": f"City '{city}' not found."}), 404
+        response.raise_for_status()
+        weather_data = response.json()
 
-        # Adding the weather icon to the response for convenience
-        icon_code = data['weather'][0]['icon']
-        data['icon_url'] = f"http://openweathermap.org/img/wn/{icon_code}@2x.png"
+        # Fetch timezone info using latitude and longitude
+        lat = weather_data["coord"]["lat"]
+        lon = weather_data["coord"]["lon"]
+        timezone_response = requests.get(
+            f"http://api.timezonedb.com/v2.1/get-time-zone?key={TIMEZONEDB_API_KEY}&format=json&by=position&lat={lat}&lng={lon}",
+            timeout=10  # Add a timeout to prevent long wait times
+        )
+        timezone_response.raise_for_status()
+        timezone_data = timezone_response.json()
 
-        return jsonify(data)  # Return the weather data
-    except requests.exceptions.RequestException as e:
-        # Handle errors gracefully and return a message for debugging
+        if timezone_data.get("status") == "OK":
+            weather_data["timeZoneName"] = timezone_data["zoneName"]
+            weather_data["gmtOffset"] = timezone_data["gmtOffset"]
+            print(f"City: {city}, GMT Offset: {timezone_data['gmtOffset']}")  # Debug log
+        else:
+            print(f"Failed to fetch timezone data for {city}.")  # Debug log
+
+        return jsonify(weather_data)
+    except Exception as e:
+        print(f"Error while fetching data: {str(e)}")  # Debug log
         return jsonify({"error": "Failed to fetch weather data", "details": str(e)}), 500
 
 @app.route('/forecast', methods=['GET'])
 def get_forecast():
-    """
-    Handles requests for a 5-day weather forecast. Requires 'city' as a query parameter.
-    Example: /forecast?city=London&units=imperial
-    """
     city = request.args.get('city')
-    units = request.args.get('units', 'imperial')  # Defaults to imperial if not specified
+    units = request.args.get('units', 'imperial')
 
     if not city:
         return jsonify({"error": "City is required"}), 400
 
     try:
-        # Sending a request to OpenWeather API for the 5-day forecast
         response = requests.get(f"{FORECAST_URL}?q={city}&appid={API_KEY}&units={units}")
+        if response.status_code == 404:
+            return jsonify({"error": f"City '{city}' not found."}), 404
         response.raise_for_status()
-        data = response.json()
-        return jsonify(data)  # Return the forecast data
-    except requests.exceptions.RequestException as e:
-        # Again, we handle errors nicely for troubleshooting
+        forecast_data = response.json()
+        return jsonify(forecast_data)
+    except Exception as e:
+        print(f"Error while fetching forecast data: {str(e)}")  # Debug log
         return jsonify({"error": "Failed to fetch forecast data", "details": str(e)}), 500
 
-if __name__ == '__main__':
-    # Running the app in debug mode (for development only, not for production!)
+if __name__ == "__main__":
     app.run(debug=True)
+
+
+
+
 

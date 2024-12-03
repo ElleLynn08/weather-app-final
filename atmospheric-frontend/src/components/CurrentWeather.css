@@ -1,0 +1,53 @@
+.current-weather {
+  background-color: #005679;
+  padding: 20px;
+  border-radius: 10px;
+  color: #fff;
+  text-align: center;
+  margin: 20px auto;
+  max-width: 400px;
+  margin-bottom: 50px;
+}
+
+.weather-icon {
+  width: 100px;
+  height: 100px;
+  margin-bottom: 0px;
+  filter: brightness(0) invert(1);
+}
+
+
+.weather-description {
+  font-size: 1.2rem;
+  font-weight: bold;
+  text-transform: capitalize; /* Ensure first letter of each word is capitalized */
+  margin-top: -5px;
+}
+
+.temperature {
+  font-size: 3rem;
+  font-weight: bold;
+  margin: 10px 0;
+}
+
+
+.message {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin: 10px 0;
+  margin-bottom: 15px;
+
+}
+
+.weather-details {
+  font-size: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  gap: 10px;
+}
+
+.weather-details p {
+  margin: 5px 0;
+}
+
