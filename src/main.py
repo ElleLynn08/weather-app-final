@@ -1,15 +1,26 @@
-from dotenv import load_dotenv
+"""
+Main module for weather application.
+Fetches current weather, displays forecast, and saves weather history.
+"""
+
 import os
-from src.weather_api_client import WeatherAPIClient
-from src.patterns.history_manager import HistoryManager
 from datetime import datetime, timezone, timedelta
 import socket
+from dotenv import load_dotenv
+from src.weather_api_client import WeatherAPIClient
+from src.patterns.history_manager import HistoryManager
 
-# Utility function to format dates and times
+
 def format_date(date_obj, is_24_hour_format=True):
     """
     Formats a datetime object into a friendly date and time string.
-    You can toggle between 24-hour or 12-hour (AM/PM) format.
+
+    Args:
+        date_obj (datetime): The datetime object to format.
+        is_24_hour_format (bool): Whether to use 24-hour format.
+
+    Returns:
+        str: Formatted date and time string.
     """
     day_of_week = date_obj.strftime("%A")  # Example: Monday
     date = date_obj.strftime("%d %b %Y")  # Example: 24 Nov 2024
@@ -17,16 +28,26 @@ def format_date(date_obj, is_24_hour_format=True):
     return f"{day_of_week}, {date}, and the time is {time}"
 
 
-# This fetches the machine's hostname (just something fun to include!)
 def get_local_location():
+    """
+    Fetches the machine's hostname.
+
+    Returns:
+        str: The hostname or default location string.
+    """
     try:
         return socket.gethostname()
-    except Exception:
+    except OSError:  # Specific exception for socket errors
         return "your location"
 
 
-# Function to display a simple 5-day weather forecast
 def display_forecast(forecast):
+    """
+    Displays a simple 5-day weather forecast.
+
+    Args:
+        forecast (dict): Forecast data containing weather information.
+    """
     print("\n5-Day Weather Forecast:")
     for day in forecast["list"][:40:8]:  # Grabbing every 8th timestamp (one per day)
         date = datetime.strptime(day["dt_txt"], "%Y-%m-%d %H:%M:%S")
@@ -38,8 +59,13 @@ def display_forecast(forecast):
         )
 
 
-# Displays weather history saved by the user
 def display_history(history):
+    """
+    Displays weather history saved by the user.
+
+    Args:
+        history (list): List of dictionaries containing weather history.
+    """
     print("\nWeather History:")
     for entry in history:
         print(
@@ -49,8 +75,10 @@ def display_history(history):
         )
 
 
-# This is the main function that brings it all together!
 def main():
+    """
+    Main function that initializes the application and handles user interactions.
+    """
     load_dotenv()
     api_key = os.getenv("API_KEY")
 
@@ -98,15 +126,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-
-
-
-
-
-
-
-
-
-
